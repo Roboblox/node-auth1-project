@@ -28,7 +28,7 @@ server.use(
     saveUninitialized: false, // we don't want to persist the session 'by default' (GDPR!!!!)
     // storing the session in the db so it survives server restarts
     store: new sessionStore({
-      knex: require("../database/connection"),
+      knex: require("../database/connections"),
       tablename: "sessions",
       sidfieldname: "sid",
       createTable: true,
@@ -47,7 +47,13 @@ server.post("/auth/register", async (req, res) => {
     const user = { username, password: hash, role: 2 };
     const addedUser = await Users.add(user);
     // send back the record to the client
-    res.json(addedUser);
+    if (username && password) {
+      res.json(addedUser);
+    } else {
+      res.status
+        .status(401)
+        .json({ message: "please provide username and password" });
+    }
   } catch (err) {
     // res.status(500).json({ message: 'Something went terrible' }) // PRODUCTION
     res.status(500).json({ message: err.message });
